@@ -33,4 +33,9 @@ public class HomeController {
         return ApiResponse.onSuccess(todayRecord);
     }
 
+    @GetMapping("/hello")
+    public String testApi() {
+        return "HUGG";
+    }
+
 }
