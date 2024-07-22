@@ -3,11 +3,16 @@ package foregg.foreggserver.service.fcmService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.nimbusds.jose.shaded.gson.Gson;
 import foregg.foreggserver.dto.fcmDTO.FcmMessageDTO;
 import foregg.foreggserver.repository.UserRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import okhttp3.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +30,7 @@ public class FcmService{
      *
      * @return 성공(1), 실패(0)
      */
+
     public int sendMessageTo(String fcmToken, String title, String body, String type, String targetId, String time) throws IOException {
 
         String message = makeMessage(fcmToken, "Hugg", body, type, targetId, time);
@@ -65,21 +71,50 @@ public class FcmService{
      *
      * @return String
      */
-    private String makeMessage(String fcmToken, String title, String body, String type, String targetId, String time) throws JsonProcessingException {
+//    private String makeMessage(String fcmToken, String title, String body, String type, String targetId, String time) throws JsonProcessingException {
+//
+//        ObjectMapper om = new ObjectMapper();
+//        FcmMessageDTO fcmMessageDto = FcmMessageDTO.builder()
+//                .message(FcmMessageDTO.Message.builder()
+//                        .token(fcmToken)
+//                        .data(FcmMessageDTO.Notification.builder()
+//                                .title(title)
+//                                .body(body)
+//                                .type(type)
+//                                .targetId(targetId)
+//                                .time(time)
+//                                .build()
+//                        )
+//                        .build()).validateOnly(false).build();
+//
+//        return om.writeValueAsString(fcmMessageDto);
+//    }
 
+    private String makeMessage(String fcmToken, String title, String body, String type, String targetId, String time) throws JsonProcessingException {
         ObjectMapper om = new ObjectMapper();
         FcmMessageDTO fcmMessageDto = FcmMessageDTO.builder()
                 .message(FcmMessageDTO.Message.builder()
                         .token(fcmToken)
-                        .data(FcmMessageDTO.Notification.builder()
+                        .notification(FcmMessageDTO.Notification.builder()
                                 .title(title)
                                 .body(body)
+                                .build()
+                        )
+                        .data(FcmMessageDTO.Data.builder()
                                 .type(type)
                                 .targetId(targetId)
                                 .time(time)
                                 .build()
-                        ).build()).validateOnly(false).build();
+                        )
+                        .android(FcmMessageDTO.Android.builder()
+                                .priority("high")
+                                .build()
+                        )
+                        .build()).validateOnly(false).build();
 
         return om.writeValueAsString(fcmMessageDto);
     }
+
+
+
 }
